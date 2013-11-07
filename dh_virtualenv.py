@@ -57,7 +57,7 @@ class Deployment(object):
             virtualenv.append('--verbose')
 
         if self.python:
-            virtualenv.extend('--python', self.python)
+            virtualenv.extend(['--python', self.python])
 
         virtualenv.append(self.package_dir)
         subprocess.check_call(virtualenv)
