@@ -117,9 +117,7 @@ class Deployment(object):
         files2, stderr = grep_proc.communicate()
         files2 = files2.strip()
 
-        files = files + files2
-
-        if not files:
+        if not files and not files2:
             return
 
         pythonpath = os.path.join(self.install_root, self.package, 'bin/python')
@@ -132,7 +130,7 @@ class Deployment(object):
                  f])
 
         # Rewrite files ending in pypy
-        for f in files.split('\n'):
+        for f in files2.split('\n'):
             subprocess.check_call(
                 ['sed', '-i', r's|^#!.*bin/\(env \)\?pypy|#!{0}|'.format(
                     pythonpath),
