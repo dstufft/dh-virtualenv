@@ -99,6 +99,7 @@ class Deployment(object):
         """Translate /usr/bin/python and /usr/bin/env python sheband
         lines to point to our virtualenv python.
         """
+        # Look for ones that point to Python
         grep_proc = subprocess.Popen(
             ['grep', '-l', '-r', '-e', r'^#!.*bin/\(env \)\?python',
              self.bin_dir],
@@ -106,13 +107,34 @@ class Deployment(object):
         )
         files, stderr = grep_proc.communicate()
         files = files.strip()
+
+        # Look for ones that point to PyPy
+        grep_proc = subprocess.Popen(
+            ['grep', '-l', '-r', '-e', r'^#!.*bin/\(env \)\?pypy',
+             self.bin_dir],
+            stdout=subprocess.PIPE
+        )
+        files2, stderr = grep_proc.communicate()
+        files2 = files2.strip()
+
+        files = files + files2
+
         if not files:
             return
 
         pythonpath = os.path.join(self.install_root, self.package, 'bin/python')
+
+        # Rewrite files ending in python
         for f in files.split('\n'):
             subprocess.check_call(
                 ['sed', '-i', r's|^#!.*bin/\(env \)\?python|#!{0}|'.format(
+                    pythonpath),
+                 f])
+
+        # Rewrite files ending in pypy
+        for f in files.split('\n'):
+            subprocess.check_call(
+                ['sed', '-i', r's|^#!.*bin/\(env \)\?pypy|#!{0}|'.format(
                     pythonpath),
                  f])
 
